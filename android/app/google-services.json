@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "120144568449",
+    "project_id": "auth-c79da",
+    "storage_bucket": "auth-c79da.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:120144568449:android:c76f668069120464686d80",
+        "android_client_info": {
+          "package_name": "com.example.loom_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBxYlGoCTpb1d7ZqsaaX3E0Z8n2WYXads"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:120144568449:android:5d3a356668d40e43686d80",
+        "android_client_info": {
+          "package_name": "com.example.taste_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBxYlGoCTpb1d7ZqsaaX3E0Z8n2WYXads"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
