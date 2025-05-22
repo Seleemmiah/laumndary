@@ -1,11 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:taste_app/components/my_buttons.dart';
 import 'package:taste_app/components/square_tile.dart';
 import 'package:taste_app/components/text_field.dart';
 import 'package:taste_app/pages/home_page.dart';
 import 'package:taste_app/pages/register_now.dart';
-import 'package:taste_app/pages/reset_password_page.dart'; // ✅ Added this
+import 'package:taste_app/pages/reset_password_page.dart'; // Added this
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -17,6 +18,28 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+
+  // google sign in
+  signInWithGoogle() async {
+// begin witth interractive sign in process
+    final GoogleSignInAccount? gUser = await GoogleSignIn().signIn();
+
+    // user cancels google sign in pop up
+    if (gUser == null) {
+      return;
+    }
+// obtain auth details from the request
+    final GoogleSignInAuthentication gAuth = await gUser.authentication;
+
+// create a new credential
+    final credential = GoogleAuthProvider.credential(
+      accessToken: gAuth.accessToken,
+      idToken: gAuth.idToken,
+    );
+
+    // This is where you can use the credential to sign in with Firebase
+    await FirebaseAuth.instance.signInWithCredential(credential);
+  }
 
   void signUserIn() async {
     showDialog(
@@ -189,7 +212,10 @@ class _LoginPageState extends State<LoginPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SquareTile(imagePath: 'lib/images/google.PNG'),
+                  GestureDetector(
+                    onTap: signInWithGoogle,
+                    child: SquareTile(imagePath: 'lib/images/google.PNG'),
+                  ),
                   const SizedBox(width: 25),
                   SquareTile(imagePath: 'lib/images/apple.PNG'),
                 ],
