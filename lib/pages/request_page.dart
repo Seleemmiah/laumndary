@@ -10,6 +10,10 @@ class RequestPickupPage extends StatefulWidget {
 class _RequestPickupPageState extends State<RequestPickupPage> {
   GoogleMapController? _mapController;
   LatLng? _currentPosition;
+  Set<Marker> _markers = {};
+  final _addressController = TextEditingController();
+  TimeOfDay? _pickupTime;
+  String? _selectedLaundryType;
 
   final List<Map<String, dynamic>> laundryShops = [
     {
@@ -32,61 +36,54 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
     }
   ];
 
-  Set<Marker> _markers = {};
-
-  final _addressController = TextEditingController();
-  TimeOfDay? _pickupTime;
-
   @override
   void initState() {
     super.initState();
     _getUserLocation();
   }
 
-  void _getUserLocation() async {
-    Location location = Location();
+  Future<void> _getUserLocation() async {
+    final location = Location();
 
-    bool _serviceEnabled = await location.serviceEnabled();
-    if (!_serviceEnabled) {
-      _serviceEnabled = await location.requestService();
-      if (!_serviceEnabled) return;
+    if (!await location.serviceEnabled()) {
+      if (!await location.requestService()) return;
     }
 
-    PermissionStatus _permissionGranted = await location.hasPermission();
-    if (_permissionGranted == PermissionStatus.denied) {
-      _permissionGranted = await location.requestPermission();
-      if (_permissionGranted != PermissionStatus.granted) return;
+    if (await location.hasPermission() == PermissionStatus.denied) {
+      if (await location.requestPermission() != PermissionStatus.granted)
+        return;
     }
 
-    LocationData _locationData = await location.getLocation();
-    final userLatLng =
-        LatLng(_locationData.latitude!, _locationData.longitude!);
+    final locData = await location.getLocation();
 
-    setState(() {
-      _currentPosition = userLatLng;
-      _loadMarkers();
-    });
-  }
+    final currentLatLng = LatLng(locData.latitude!, locData.longitude!);
 
-  void _loadMarkers() {
-    if (_currentPosition == null) return;
+    final newMarkers = <Marker>{
+      Marker(
+        markerId: MarkerId('user'),
+        position: currentLatLng,
+        infoWindow: InfoWindow(title: 'You are here'),
+      ),
+    };
 
-    Set<Marker> markers = {};
     for (var shop in laundryShops) {
-      markers.add(
+      final shopLatLng = LatLng(
+        currentLatLng.latitude + shop['lat'],
+        currentLatLng.longitude + shop['lng'],
+      );
+
+      newMarkers.add(
         Marker(
           markerId: MarkerId(shop['name']),
-          position: LatLng(
-            _currentPosition!.latitude + shop['lat'],
-            _currentPosition!.longitude + shop['lng'],
-          ),
-          infoWindow: InfoWindow(title: shop['name']),
+          position: shopLatLng,
+          infoWindow: InfoWindow(title: shop['name'], snippet: shop['address']),
         ),
       );
     }
 
     setState(() {
-      _markers = markers;
+      _currentPosition = currentLatLng;
+      _markers = newMarkers;
     });
   }
 
@@ -97,27 +94,26 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
     );
 
     if (time != null) {
-      setState(() {
-        _pickupTime = time;
-      });
+      setState(() => _pickupTime = time);
     }
   }
 
   void _confirmPickup() {
-    if (_addressController.text.isEmpty || _pickupTime == null) {
+    if (_addressController.text.isEmpty ||
+        _pickupTime == null ||
+        _selectedLaundryType == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please enter all fields')),
+        SnackBar(content: Text('Please fill in all the details')),
       );
       return;
     }
 
-    // Proceed to confirmation or backend logic
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         title: Text("Pickup Confirmed"),
         content: Text(
-            "We'll pick up your laundry at ${_addressController.text} by ${_pickupTime!.format(context)}"),
+            "Laundry type: $_selectedLaundryType\nAddress: ${_addressController.text}\nTime: ${_pickupTime!.format(context)}"),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: Text("OK"))
         ],
@@ -134,43 +130,38 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Select Laundry Type",
-                style: Theme.of(context).textTheme.titleMedium),
+            Text("Select Laundry Type"),
             DropdownButton<String>(
-              items: [
-                DropdownMenuItem(
-                    value: 'Wash & Fold', child: Text('Wash & Fold')),
-                DropdownMenuItem(
-                    value: 'Dry Cleaning', child: Text('Dry Cleaning')),
-                DropdownMenuItem(value: 'Iron Only', child: Text('Iron Only')),
-              ],
-              onChanged: (val) {},
-              hint: Text('Choose Type'),
+              value: _selectedLaundryType,
+              isExpanded: true,
+              hint: Text("Choose Type"),
+              items: ['Wash & Fold', 'Dry Cleaning', 'Iron Only']
+                  .map((type) => DropdownMenuItem(
+                        value: type,
+                        child: Text(type),
+                      ))
+                  .toList(),
+              onChanged: (value) =>
+                  setState(() => _selectedLaundryType = value),
             ),
             SizedBox(height: 16),
-
-            Text("Your Address",
-                style: Theme.of(context).textTheme.titleMedium),
+            Text("Your Address"),
             TextField(
               controller: _addressController,
               decoration: InputDecoration(hintText: "Enter your address"),
             ),
             SizedBox(height: 16),
-
-            Text("Pickup Time", style: Theme.of(context).textTheme.titleMedium),
+            Text("Pickup Time"),
             ElevatedButton(
               onPressed: _selectPickupTime,
               child: Text(_pickupTime == null
                   ? "Select Time"
                   : _pickupTime!.format(context)),
             ),
-
-            SizedBox(height: 24),
-            Text("Nearby Laundry Shops",
-                style: Theme.of(context).textTheme.titleMedium),
+            SizedBox(height: 16),
+            Text("Nearby Laundry Shops"),
             Container(
               height: 250,
-              margin: EdgeInsets.symmetric(vertical: 8),
               child: _currentPosition == null
                   ? Center(child: CircularProgressIndicator())
                   : GoogleMap(
@@ -180,32 +171,15 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
                       ),
                       onMapCreated: (controller) => _mapController = controller,
                       myLocationEnabled: true,
+                      myLocationButtonEnabled: true,
                       markers: _markers,
                     ),
             ),
-
-            // Shop list below map
-            ListView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: laundryShops.length,
-              itemBuilder: (context, index) {
-                final shop = laundryShops[index];
-                return ListTile(
-                  leading: Icon(Icons.local_laundry_service),
-                  title: Text(shop['name']),
-                  subtitle: Text(shop['address']),
-                );
-              },
-            ),
-
             SizedBox(height: 24),
-            Center(
-              child: ElevatedButton(
-                onPressed: _confirmPickup,
-                child: Text("Confirm Pickup"),
-              ),
-            ),
+            ElevatedButton(
+              onPressed: _confirmPickup,
+              child: Text("Confirm Pickup"),
+            )
           ],
         ),
       ),

@@ -35,6 +35,8 @@ class _HomePageState extends State<HomePage> {
 
   // pages to display
   final List<Widget> _pages = [
+    // home page
+    HomePage(),
     // oders page
     OrdersPage(),
     // request page
@@ -86,23 +88,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Welcome, $userName',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: () {},
-              child: const Text('Go to Other Page'),
-            ),
-          ],
-        ),
-      ),
-      // body: _pages[_selectedIndex],
+      body: _pages[_selectedIndex],
     );
   }
 }
