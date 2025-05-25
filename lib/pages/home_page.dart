@@ -5,7 +5,8 @@ import 'package:taste_app/pages/orders.dart';
 import 'package:taste_app/pages/profile_page.dart';
 import 'package:taste_app/components/bottom_nav.dart';
 import 'package:taste_app/pages/login_page.dart';
-import 'package:taste_app/pages/request_page.dart'; // Update if needed
+import 'package:taste_app/pages/request_page.dart';
+import 'package:taste_app/screens/home_screen.dart'; // Update if needed
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -34,18 +35,13 @@ class _HomePageState extends State<HomePage> {
   }
 
   // pages to display
-  final List<Widget> _pages = [
-    // home page
-    HomePage(),
-    // oders page
-    OrdersPage(),
-    // request page
-    RequestPickupPage(),
-    // chat pagex
-    ChatPage(),
-    // profile page
-    ProfilePage()
-  ];
+  List<Widget> get _pages => [
+        HomeScreen(userName: userName),
+        OrdersPage(),
+        RequestPickupPage(),
+        ChatPage(),
+        ProfilePage()
+      ];
 
   //  Fetch and update the user's display name
   void fetchUserName() async {
@@ -88,7 +84,11 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: _pages[_selectedIndex],
+      // body: _pages[_selectedIndex],
+      body: userName == 'Guest' &&
+              FirebaseAuth.instance.currentUser?.displayName != 'Guest'
+          ? const Center(child: CircularProgressIndicator())
+          : _pages[_selectedIndex],
     );
   }
 }

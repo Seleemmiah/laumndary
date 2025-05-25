@@ -6,7 +6,7 @@ import 'package:taste_app/components/square_tile.dart';
 import 'package:taste_app/components/text_field.dart';
 import 'package:taste_app/pages/home_page.dart';
 import 'package:taste_app/pages/register_now.dart';
-import 'package:taste_app/pages/reset_password_page.dart'; // Added this
+import 'package:taste_app/pages/reset_password_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -19,26 +19,26 @@ class _LoginPageState extends State<LoginPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  // google sign in
   signInWithGoogle() async {
-// begin witth interractive sign in process
     final GoogleSignInAccount? gUser = await GoogleSignIn().signIn();
 
-    // user cancels google sign in pop up
-    if (gUser == null) {
-      return;
-    }
-// obtain auth details from the request
+    if (gUser == null) return;
+
     final GoogleSignInAuthentication gAuth = await gUser.authentication;
 
-// create a new credential
     final credential = GoogleAuthProvider.credential(
       accessToken: gAuth.accessToken,
       idToken: gAuth.idToken,
     );
 
-    // This is where you can use the credential to sign in with Firebase
     await FirebaseAuth.instance.signInWithCredential(credential);
+
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
+    }
   }
 
   void signUserIn() async {
@@ -73,7 +73,7 @@ class _LoginPageState extends State<LoginPage> {
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomePage()),
+        MaterialPageRoute(builder: (context) => const HomePage()),
       );
     } on FirebaseAuthException catch (e) {
       Navigator.pop(context);
@@ -109,7 +109,6 @@ class _LoginPageState extends State<LoginPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: 50),
-
               Center(
                 child: Container(
                   color: Colors.grey,
@@ -121,9 +120,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 30),
-
               Text(
                 'Welcome back you\'ve been missed',
                 style: TextStyle(
@@ -132,27 +129,20 @@ class _LoginPageState extends State<LoginPage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-
               const SizedBox(height: 25),
-
               MyTextField(
                 controller: emailController,
                 hintText: 'Email',
                 obscureText: false,
                 prefixIcon: const Icon(Icons.email),
               ),
-
               const SizedBox(height: 10),
-
               MyTextField(
                 controller: passwordController,
                 hintText: 'Password',
                 obscureText: true,
               ),
-
               const SizedBox(height: 10),
-
-              //  Updated Forgot Password link
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 25.0),
                 child: Row(
@@ -179,13 +169,9 @@ class _LoginPageState extends State<LoginPage> {
                   ],
                 ),
               ),
-
               const SizedBox(height: 25),
-
               MyButton(text: "Sign In", onTap: signUserIn),
-
               const SizedBox(height: 50),
-
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 25.0),
                 child: Row(
@@ -206,9 +192,7 @@ class _LoginPageState extends State<LoginPage> {
                   ],
                 ),
               ),
-
               const SizedBox(height: 50),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -220,9 +204,7 @@ class _LoginPageState extends State<LoginPage> {
                   SquareTile(imagePath: 'lib/images/apple.PNG'),
                 ],
               ),
-
               const SizedBox(height: 50),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
