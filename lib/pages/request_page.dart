@@ -43,48 +43,77 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
   }
 
   Future<void> _getUserLocation() async {
-    final location = Location();
+    try {
+      final location = Location();
 
-    if (!await location.serviceEnabled()) {
-      if (!await location.requestService()) return;
-    }
+      // Check if service is enabled
+      bool serviceEnabled = await location.serviceEnabled();
+      if (!serviceEnabled) {
+        serviceEnabled = await location.requestService();
+        if (!serviceEnabled) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Location service is disabled.')),
+          );
+          return;
+        }
+      }
 
-    if (await location.hasPermission() == PermissionStatus.denied) {
-      if (await location.requestPermission() != PermissionStatus.granted)
+      // Check permission
+      PermissionStatus permissionGranted = await location.hasPermission();
+      if (permissionGranted == PermissionStatus.denied) {
+        permissionGranted = await location.requestPermission();
+        if (permissionGranted != PermissionStatus.granted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Location permission denied')),
+          );
+          return;
+        }
+      }
+
+      final locData = await location.getLocation();
+
+      if (locData.latitude == null || locData.longitude == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Unable to get current location.')),
+        );
         return;
-    }
+      }
 
-    final locData = await location.getLocation();
+      final currentLatLng = LatLng(locData.latitude!, locData.longitude!);
 
-    final currentLatLng = LatLng(locData.latitude!, locData.longitude!);
-
-    final newMarkers = <Marker>{
-      Marker(
-        markerId: MarkerId('user'),
-        position: currentLatLng,
-        infoWindow: InfoWindow(title: 'You are here'),
-      ),
-    };
-
-    for (var shop in laundryShops) {
-      final shopLatLng = LatLng(
-        currentLatLng.latitude + shop['lat'],
-        currentLatLng.longitude + shop['lng'],
-      );
-
-      newMarkers.add(
+      final newMarkers = <Marker>{
         Marker(
-          markerId: MarkerId(shop['name']),
-          position: shopLatLng,
-          infoWindow: InfoWindow(title: shop['name'], snippet: shop['address']),
+          markerId: MarkerId('user'),
+          position: currentLatLng,
+          infoWindow: InfoWindow(title: 'You are here'),
         ),
+      };
+
+      for (var shop in laundryShops) {
+        final shopLatLng = LatLng(
+          currentLatLng.latitude + shop['lat'],
+          currentLatLng.longitude + shop['lng'],
+        );
+
+        newMarkers.add(
+          Marker(
+            markerId: MarkerId(shop['name']),
+            position: shopLatLng,
+            infoWindow:
+                InfoWindow(title: shop['name'], snippet: shop['address']),
+          ),
+        );
+      }
+
+      setState(() {
+        _currentPosition = currentLatLng;
+        _markers = newMarkers;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error getting location: $e')),
       );
     }
-
-    setState(() {
-      _currentPosition = currentLatLng;
-      _markers = newMarkers;
-    });
   }
 
   void _selectPickupTime() async {
