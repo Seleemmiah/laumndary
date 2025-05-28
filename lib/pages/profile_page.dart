@@ -9,17 +9,9 @@ class ProfilePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Profile'),
         centerTitle: true,
-        backgroundColor: Colors.grey[200],
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {
-              // Add edit profile functionality here
-            },
-          ),
-        ],
+        backgroundColor: Colors.transparent,
       ),
-      backgroundColor: Colors.grey[200],
+      backgroundColor: Colors.grey[350],
     );
   }
 }
