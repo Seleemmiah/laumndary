@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'firebase_options.dart';
 import 'pages/login_page.dart';
+import 'pages/home_page.dart';
 import 'screens/splash_screen.dart';
+import 'pages/chat_page.dart';
+import 'pages/orders.dart';
+import 'pages/profile_page.dart';
+import 'pages/request_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,8 +22,21 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Taste App',
       debugShowCheckedModeBanner: false,
-      home: const SplashScreenWrapper(),
+      theme: ThemeData(
+        primarySwatch: Colors.deepPurple,
+      ),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const SplashScreenWrapper(),
+        '/login': (context) => const LoginPage(),
+        '/home': (context) => const HomePage(),
+        '/chat': (context) => ChatPage(),
+        '/orders': (context) => OrdersPage(),
+        '/request': (context) => RequestPickupPage(),
+        '/profile': (context) => ProfilePage(),
+      },
     );
   }
 }
@@ -40,17 +60,18 @@ class _SplashScreenWrapperState extends State<SplashScreenWrapper> {
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
-    await Future.delayed(const Duration(seconds: 2)); // Optional splash delay
+    await Future.delayed(const Duration(seconds: 2)); // Splash delay
+
+    final user = FirebaseAuth.instance.currentUser;
 
     if (mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const LoginPage()),
-      );
+      Navigator.pushReplacementNamed(
+          context, user == null ? '/login' : '/home');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return const SplashScreen(); // Show splash screen while initializing
+    return const SplashScreen();
   }
 }

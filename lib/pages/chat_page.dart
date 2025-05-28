@@ -5,6 +5,21 @@ class ChatPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Chat'),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              // Add search functionality here
+            },
+          ),
+        ],
+      ),
+      backgroundColor: Colors.grey[200],
+    );
   }
 }

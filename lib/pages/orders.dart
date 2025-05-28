@@ -9,7 +9,7 @@ class OrdersPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Orders'),
         centerTitle: true,
-        backgroundColor: Colors.grey[900],
+        backgroundColor: Colors.grey[200],
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
@@ -19,6 +19,7 @@ class OrdersPage extends StatelessWidget {
           ),
         ],
       ),
+      backgroundColor: Colors.grey[200],
     );
   }
 }
